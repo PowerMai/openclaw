@@ -1,7 +1,12 @@
 # ClaWorks WIP 清单
 
-> 最后更新：2026-05-25（P2 生产交付收尾）  
-> **分支**：`local/claworks-product`
+> 最后更新：2026-05-25（P2 **代码完成，待人工签收**）  
+> **分支**：`local/claworks-product`  
+> **上线清单**：[`docs/claworks/PRODUCTION-GO-LIVE.md`](docs/claworks/PRODUCTION-GO-LIVE.md)
+
+## 状态摘要
+
+**P2 生产交付（除 Studio）代码与文档已就绪。** 四项人工阻塞见下表；维护者按 [`PRODUCTION-GO-LIVE.md`](docs/claworks/PRODUCTION-GO-LIVE.md) 逐项签收。
 
 ## 已合入（P2 生产交付）
 
@@ -11,7 +16,7 @@
 | OT dry-run + 生产配置    | `pnpm claworks:ot-dry-run` + `ot-production.claworks.fragment.json`（`b20cb8a315`）                          |
 | OT 实机 runbook          | [`docs/claworks/ot-live.md`](docs/claworks/ot-live.md) + `pnpm claworks:ot-live-checklist` + env 校验 helper |
 | GitHub branch protection | 文档 + `.github/branch-protection/claworks-main.json` + `pnpm claworks:branch-protection`                    |
-| npm publish 预检         | dry-run + `pnpm claworks:npm-publish-checklist`                                                              |
+| npm publish 预检         | dry-run + `pnpm claworks:npm-publish-checklist --verify`（runtime + CLI pack OK）                            |
 | Feishu live E2E          | gate 单测（CI smoke）+ live 脚本 + [`docs/claworks/feishu-live-e2e.md`](docs/claworks/feishu-live-e2e.md)    |
 | 弱模型 / 进化 CI         | PR + nightly workflows；branch protection 脚本待 admin `--apply`                                             |
 
@@ -35,13 +40,13 @@
 
 ## 阻塞 — 需人工（凭证 / 硬件 / 审批）
 
-| 项                       | 状态     | 说明                                             |
-| ------------------------ | -------- | ------------------------------------------------ |
-| GitHub branch protection | **阻塞** | 脚本 dry-run 就绪；需 repo **admin** `--apply`   |
-| npm 公开发布             | **阻塞** | dry-run/checklist 就绪；`@claworks` org + token  |
-| Feishu 完整回环          | **阻塞** | ingress 探针就绪；需 `FEISHU_*` + webhook + 渠道 |
-| OT 连接器实机            | **阻塞** | runbook/checklist 就绪；需现场 broker/PLC        |
-| Studio React 编辑器      | **跳过** | 明确不在 P2 范围                                 |
+| 项                       | 状态     | 说明                                                                                                 |
+| ------------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| GitHub branch protection | **阻塞** | 脚本 dry-run 就绪；需 **ClaWorks 目标仓库** admin `--repo ORG/claworks --apply`（默认 upstream 404） |
+| npm 公开发布             | **阻塞** | `--verify` 通过；`@claworks` org + token 审批后 publish                                              |
+| Feishu 完整回环          | **阻塞** | ingress 探针就绪；需 `FEISHU_*` + webhook + 渠道                                                     |
+| OT 连接器实机            | **阻塞** | runbook/checklist 就绪；需现场 broker/PLC                                                            |
+| Studio React 编辑器      | **跳过** | 明确不在 P2 范围                                                                                     |
 
 ## 当前验证命令
 
@@ -52,10 +57,12 @@ pnpm test test/scripts/claworks-feishu-live-e2e-gate.test.ts
 pnpm test test/scripts/claworks-ot-connectivity-env.test.ts
 pnpm test test/scripts/claworks-apply-branch-protection.test.ts
 pnpm claworks:branch-protection              # dry-run
-pnpm claworks:npm-publish-checklist
+pnpm claworks:branch-protection --repo ORG/claworks --apply   # 维护者
+pnpm claworks:npm-publish-checklist --verify
 pnpm claworks:release:preflight
 ```
 
+- **上线清单**：[`docs/claworks/PRODUCTION-GO-LIVE.md`](docs/claworks/PRODUCTION-GO-LIVE.md)
 - **可观测性**：[`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md)
 - **npm 发布**：[`docs/claworks/npm-publish.md`](docs/claworks/npm-publish.md)
 - **签收**：[`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) · [`docs/SIGNOFF-SNAPSHOT.md`](docs/SIGNOFF-SNAPSHOT.md)
