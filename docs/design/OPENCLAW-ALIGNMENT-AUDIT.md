@@ -244,7 +244,7 @@ Runtime 热修复：`POST /v1/doctor?fix=true`（与 `claworks doctor --fix` / `
 | OT 模拟 dry-run             | `pnpm claworks:ot-dry-run`（CI + 本地）                                                  | ✅          |
 | npm pack 预检（不实际上传） | `pnpm claworks:publish:dry-run` + `pnpm claworks:runtime:publish:dry-run`                | ✅          |
 | OT 实机 runbook             | [`docs/claworks/ot-live.md`](../claworks/ot-live.md) + `pnpm claworks:ot-live-checklist` | ✅          |
-| 发布前预检                  | `pnpm claworks:release:preflight`（可选 `CLAWORKS_PREFLIGHT_GATEWAY=1` 含 gateway e2e）  | ☐ 打 tag 前 |
+| 发布前预检                  | `pnpm claworks:release:preflight`（`scripts/claworks-release-preflight.mjs`；加速 `CLAWORKS_SKIP_SMOKE=1`） | ✅ 脚本就绪 |
 | OT 实机签收                 | mqtt/opcua/modbus 现场，`simulate: false`                                                | ☐ 人工      |
 | npm 公开发布                | maintainer `npm publish`（dry-run 已通过，上传需审批）                                   | ☐ 人工      |
 | Release tag                 | `git status` 干净 + 打 tag                                                               | ☐ 人工      |

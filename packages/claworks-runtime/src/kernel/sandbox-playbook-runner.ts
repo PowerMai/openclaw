@@ -40,7 +40,7 @@ export function buildSandboxSimulateVariables(
   opts: SandboxSimulateOptions = {},
 ): Record<string, unknown> {
   return {
-    ...(opts.testPayload ?? {}),
+    ...opts.testPayload,
     _simulate: true,
     _sandbox: true,
     ...(opts.draftReview ? { _draft_review: true } : {}),
@@ -50,7 +50,7 @@ export function buildSandboxSimulateVariables(
 function mapRunStepsToSimulateSteps(runSteps: PlaybookRunStep[]): SimulateStepLog[] {
   const steps: SimulateStepLog[] = [];
   for (let i = 0; i < runSteps.length; i++) {
-    const s = runSteps[i]!;
+    const s = runSteps[i];
     const durationMs =
       s.completedAt && s.startedAt ? s.completedAt.getTime() - s.startedAt.getTime() : 0;
     steps.push({
@@ -82,13 +82,13 @@ export function createSandboxPlaybookTriggerRunner(
     }
     try {
       const variables = buildSandboxSimulateVariables({
-        testPayload: { ...initVars, ...(opts.testPayload ?? {}) },
+        testPayload: { ...initVars, ...opts.testPayload },
         draftReview: opts.draftReview,
       });
       const run = await playbookEngine.trigger(
         pid,
         typeof trigEvent === "object" && trigEvent !== null && !Array.isArray(trigEvent)
-          ? (trigEvent as Record<string, unknown>)
+          ? trigEvent
           : {},
         { variables },
       );

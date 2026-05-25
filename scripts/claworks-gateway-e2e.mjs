@@ -105,6 +105,25 @@ async function jfetch(base, pathname, init) {
   return body;
 }
 
+async function jfetchStatus(base, pathname, init) {
+  const res = await fetch(`${base}${pathname}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+  const text = await res.text();
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    body = { raw: text };
+  }
+  return { status: res.status, body };
+}
+
 async function main() {
   const port = await getFreePort();
   const stateDir = mkdtempSync(path.join(tmpdir(), "claworks-gw-e2e-"));
@@ -149,6 +168,17 @@ async function main() {
       await import("../packages/claworks-runtime/src/claworks/product-config-repair.ts");
     const onDisk = JSON.parse(readFileSync(configPath, "utf8"));
     repairClaworksJsonConfig(onDisk, { seedRobotMd: false, enableEchoConnector: false });
+    // Evolve draft promote uses REST kb/ingest + kb.search on the in-process stub.
+    // product-config-repair may enable memory-core; its search path does not index REST ingests.
+    const robotEntry = onDisk.plugins?.entries?.["claworks-robot"];
+    if (robotEntry?.config?.data) {
+      robotEntry.config.data.kb_provider = "stub";
+    }
+    if (Array.isArray(onDisk.plugins?.allow)) {
+      onDisk.plugins.allow = onDisk.plugins.allow.filter(
+        (id) => id !== "memory-core" && id !== "memory-lancedb",
+      );
+    }
     writeFileSync(configPath, `${JSON.stringify(onDisk, null, 2)}\n`, "utf8");
     log("config repaired via product-config-repair");
   } catch (err) {
@@ -176,9 +206,11 @@ async function main() {
         ...process.env,
         CLAWORKS_PRODUCT: "1",
         _CLAWORKS_ARGV1: "claworks",
+        CLAWORKS_STATE_DIR: stateDir,
         OPENCLAW_STATE_DIR: stateDir,
         OPENCLAW_CONFIG_PATH: configPath,
         CLAWORKS_GATEWAY_PORT: String(port),
+        CLAWORKS_VECTOR_KB: "0",
       },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -242,6 +274,100 @@ async function main() {
     });
     assert(Array.isArray(ev.matched_playbooks), "events missing matched_playbooks");
     log(`events OK matched=${ev.matched_playbooks?.length ?? 0}`);
+
+    // ── Evolve draft REST (GET + promote fail-closed) ─────────────────────
+    const e2eProposalId = `gw_e2e_draft_${Date.now()}`;
+    const e2ePlaybookYaml = [
+      "id: gw_e2e_evolve_pb",
+      "name: Gateway E2E Evolve PB",
+      "trigger:",
+      "  kind: event",
+      "  pattern: gw.e2e.evolve.test",
+      "steps: []",
+    ].join("\n");
+    const e2eDraftText = [
+      "# Playbook Draft: Gateway E2E",
+      "status: pending_review",
+      `proposal_id: ${e2eProposalId}`,
+      "confidence: 0.85",
+      "",
+      e2ePlaybookYaml,
+    ].join("\n");
+
+    await jfetch(base, "/v1/kb/ingest", {
+      method: "POST",
+      body: JSON.stringify({
+        text: e2eDraftText,
+        namespace: "evolution_drafts",
+        source: "gateway-e2e",
+      }),
+    });
+    await jfetch(base, "/v1/events", {
+      method: "POST",
+      body: JSON.stringify({
+        type: "evolve.playbook_drafted",
+        payload: {
+          id: e2eProposalId,
+          title: "Gateway E2E Draft",
+          status: "pending_review",
+          namespace: "evolution_drafts",
+        },
+      }),
+    });
+    await sleep(1500);
+
+    const draftDetail = await jfetch(
+      base,
+      `/v1/evolve/drafts/${encodeURIComponent(e2eProposalId)}`,
+    );
+    assert(
+      draftDetail.draft?.proposal_id === e2eProposalId,
+      "evolve draft GET missing proposal_id",
+    );
+    assert(draftDetail.draft?.simulation != null, "evolve draft GET missing simulation");
+    log(`evolve draft GET OK passed=${draftDetail.draft?.simulation?.passed ?? "?"}`);
+
+    if (draftDetail.draft?.simulation?.passed === true) {
+      const promoteOk = await jfetch(base, "/v1/evolve/promote-draft", {
+        method: "POST",
+        body: JSON.stringify({
+          proposal_id: e2eProposalId,
+          approved: true,
+          verify_after_deploy: false,
+        }),
+      });
+      assert(
+        promoteOk.status === "deployed" || promoteOk.status === "deployed_unverified",
+        `promote success expected deployed, got ${promoteOk.status}`,
+      );
+      const deployedPath = promoteOk.deploy?.playbook_path ?? "";
+      assert(
+        deployedPath.includes(stateDir),
+        `promote must deploy under stateDir, got ${deployedPath}`,
+      );
+      log(`evolve promote-draft approved=true OK status=${promoteOk.status}`);
+    } else {
+      const promoteFail = await jfetchStatus(base, "/v1/evolve/promote-draft", {
+        method: "POST",
+        body: JSON.stringify({
+          proposal_id: e2eProposalId,
+          approved: true,
+          verify_after_deploy: false,
+        }),
+      });
+      assert(promoteFail.status === 200, `promote-draft HTTP error: ${promoteFail.status}`);
+      assert(
+        promoteFail.body.status === "error",
+        "promote with simulation.passed=false must fail-closed",
+      );
+      assert(
+        String(promoteFail.body.reason ?? "")
+          .toLowerCase()
+          .includes("simulation"),
+        `promote reject reason must mention simulation, got: ${promoteFail.body.reason}`,
+      );
+      log(`evolve promote-draft simulation gate OK (passed=false)`);
+    }
 
     log("ALL GATEWAY E2E CHECKS PASSED");
   } catch (err) {

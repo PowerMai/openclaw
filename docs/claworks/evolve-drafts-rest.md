@@ -75,6 +75,18 @@ Content-Type: application/json
 
 模拟未通过或缺失时返回 `{ "status": "error", "reason": "...simulation..." }`，不会写入生产 Pack。
 
+## 认证与 RBAC
+
+Gateway 启用 `gateway.auth.api_key` 时，请求须带 `Authorization: Bearer <token>`（或配置中的哈希密钥）。
+
+| 端点                            | 动作 | RBAC 资源                    |
+| ------------------------------- | ---- | ---------------------------- |
+| `GET /v1/evolve/drafts`         | 读   | `rest.read`（默认 `rest:*`） |
+| `GET /v1/evolve/drafts/:id`     | 读   | `rest.read`                  |
+| `POST /v1/evolve/promote-draft` | 写   | `evolve:promote_draft`       |
+
+未配置 API Key 时为本地开发模式（`system` 主体，读写均允许）。生产环境请配置 RBAC 策略，仅授予运维角色 `evolve:promote_draft` 写权限。
+
 ## 烟测
 
 `pnpm claworks:evolution:smoke` 覆盖 drafts 列表/单条读取与 promote 门禁（见 `scripts/claworks-evolution-chain-smoke.mjs`）。

@@ -33,4 +33,4 @@ npm 发布时使用 `publishConfig.exports`（仅 `dist/`）；仓内 workspace 
 
 运行时源码仅在 `packages/claworks-runtime/`；新代码请用 `@claworks/runtime` 或子路径 `@claworks/runtime/kernel` 等。
 
-OpenClaw 专用胶水（`createClaworksBridge`、通道通知、HITL managedFlows）在 `extensions/claworks-robot/`。
+Gateway 宿主插件胶水（`createClaworksBridge`、通道通知、HITL managedFlows）在 `extensions/claworks-robot/`。
