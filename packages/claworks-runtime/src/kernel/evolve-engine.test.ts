@@ -82,6 +82,7 @@ function makeEvolveRuntime(
       trigger: vi.fn(async () => ({ steps: [], status: "completed" as const })),
     },
     loadedPacks: [],
+    config: { packs: { paths: [] } },
     packLoader: { load: vi.fn() },
     logger: vi.fn(),
     structuredOutput: {
@@ -221,6 +222,37 @@ describe("EvolveEngine", () => {
     });
     expect(result.status).toBe("approval_required");
     expect(runtime._published.some((e) => e.type === "hitl.approval_requested")).toBe(true);
+  });
+
+  it("deploy 在 CLAWORKS_STATE_DIR 下写入 user_evolved，不污染全局 ~/.claworks", async () => {
+    const { mkdtempSync, rmSync, existsSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const isolated = mkdtempSync(join(tmpdir(), "claworks-evolve-deploy-"));
+    const prev = process.env.CLAWORKS_STATE_DIR;
+    process.env.CLAWORKS_STATE_DIR = isolated;
+    try {
+      const runtime = makeEvolveRuntime();
+      runtime.packLoader.load = vi.fn(async () => ({
+        manifest: { id: "user_evolved" },
+        path: join(isolated, "packs", "user_evolved"),
+        objectTypes: [],
+        playbooks: [],
+      }));
+      runtime.playbookEngine.loadFromPacks = vi.fn(async () => undefined);
+      const engine = createEvolveEngine(runtime as never);
+      const proposal = await engine.proposeDraft({ description: "isolated deploy" });
+      const result = await engine.deploy(proposal);
+      expect(result.playbook_path).toContain(isolated);
+      expect(existsSync(result.playbook_path!)).toBe(true);
+    } finally {
+      if (prev) {
+        process.env.CLAWORKS_STATE_DIR = prev;
+      } else {
+        delete process.env.CLAWORKS_STATE_DIR;
+      }
+      rmSync(isolated, { recursive: true, force: true });
+    }
   });
 
   it("promoteDraft approved=true 部署草稿并发布 evolve.playbook_deployed", async () => {

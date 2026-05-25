@@ -86,7 +86,9 @@
 
 import { mkdir, writeFile, unlink, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { defaultClaworksStateDir } from "../claworks/product-config-repair.js";
 import type { ClaworksRuntime } from "../claworks/runtime-types.js";
+import { resolvePackDir } from "../pack-loader/index.js";
 import { parsePlaybookYaml } from "../pack-loader/yaml-parsers.js";
 import { isDocumentKnowledgeBase } from "../planes/data/kb-types.js";
 import { BRIDGE_LLM } from "./bridge-registry.js";
@@ -219,6 +221,41 @@ async function resolveDraftSimulation(
     return normalizeSimulationSnapshot(simulation as Record<string, unknown>);
   }
   return undefined;
+}
+
+/** Load evolution draft body — kb.search first, then document KB listDocuments fallback. */
+async function resolveEvolutionDraftText(
+  runtime: ClaworksRuntime,
+  proposalId: string,
+): Promise<{ text: string; title?: string } | null> {
+  const hits = await runtime.kb.search(proposalId, {
+    namespace: EVOLUTION_DRAFTS_NAMESPACE,
+    limit: 8,
+  });
+  const draftHit = hits.find((hit) => hit.text.includes(`proposal_id: ${proposalId}`)) ?? hits[0];
+  if (draftHit?.text) {
+    return { text: draftHit.text, title: draftHit.title };
+  }
+
+  if (!isDocumentKnowledgeBase(runtime.kb)) {
+    return null;
+  }
+
+  const docs = await runtime.kb.listDocuments({
+    namespace: EVOLUTION_DRAFTS_NAMESPACE,
+    limit: 100,
+  });
+  const doc = docs.find((entry) => entry.metadata?.proposal_id === proposalId);
+  if (!doc) {
+    return null;
+  }
+
+  const full = await runtime.kb.getDocument(doc.id);
+  const text = full?.chunks?.map((chunk) => chunk.text).join("\n") ?? "";
+  if (!text.trim()) {
+    return null;
+  }
+  return { text, title: doc.title };
 }
 
 async function persistDraftSimulation(
@@ -417,6 +454,30 @@ const PROPOSAL_SCHEMA: OutputSchema = {
 };
 
 // ── 工厂函数 ──────────────────────────────────────────────────────────────
+
+/** Resolve target pack directory for deploy — prefer isolated state dir over global ~/.claworks. */
+async function resolveDeployPackDir(runtime: ClaworksRuntime, packId: string): Promise<string> {
+  const stateDir = defaultClaworksStateDir();
+  const statePacksDir = join(stateDir, "packs");
+  const packPaths = runtime.config?.packs?.paths ?? [];
+
+  for (const base of packPaths) {
+    if (
+      base === statePacksDir ||
+      (base.startsWith(stateDir) && (base.endsWith("/packs") || base.endsWith("\\packs")))
+    ) {
+      return join(base, packId);
+    }
+  }
+
+  const stateScoped = packPaths.filter((p) => p.startsWith(stateDir));
+  const existing = await resolvePackDir(packId, stateScoped);
+  if (existing) {
+    return existing;
+  }
+
+  return join(statePacksDir, packId);
+}
 
 export function createEvolveEngine(runtime: ClaworksRuntime): EvolveEngine {
   async function publishDraftSuggestions(payload: Record<string, unknown>): Promise<void> {
@@ -669,12 +730,7 @@ export function createEvolveEngine(runtime: ClaworksRuntime): EvolveEngine {
         return { status: "approval_required" };
       }
 
-      const hits = await runtime.kb.search(proposalId, {
-        namespace: EVOLUTION_DRAFTS_NAMESPACE,
-        limit: 8,
-      });
-      const draftHit =
-        hits.find((hit) => hit.text.includes(`proposal_id: ${proposalId}`)) ?? hits[0];
+      const draftHit = await resolveEvolutionDraftText(runtime, proposalId);
       if (!draftHit?.text) {
         return { status: "error", reason: `draft not found: ${proposalId}` };
       }
@@ -749,9 +805,7 @@ export function createEvolveEngine(runtime: ClaworksRuntime): EvolveEngine {
     async deploy(proposal: EvolveProposal, opts = {}): Promise<EvolveResult> {
       const packId = opts.packId ?? "user_evolved";
 
-      // 确定 Pack 根目录（相对于 CWD 或绝对路径）
-      const cwdPacksDir = join(process.cwd(), "contrib", "packs");
-      const packDir = join(cwdPacksDir, packId);
+      const packDir = await resolveDeployPackDir(runtime, packId);
       const playbooksDir = join(packDir, "ontology", "playbooks");
 
       await mkdir(playbooksDir, { recursive: true });

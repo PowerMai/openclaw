@@ -533,7 +533,7 @@ export function repairClaworksRobotPluginConfig(
   const packs = pluginConfig.packs ?? {};
   pluginConfig.packs = packs;
 
-  const statePacks = join(homedir(), ".claworks", "packs");
+  const statePacks = join(defaultClaworksStateDir(), "packs");
   const sourceDir = opts?.packSourceDir ?? discoverPackSourceDir();
   const paths = new Set(
     [...(packs.paths ?? []), statePacks, sourceDir].filter(
@@ -652,7 +652,11 @@ export function isClaworksRobotConfigPresent(config: Record<string, unknown>): b
 }
 
 export function defaultClaworksStateDir(): string {
-  return process.env.OPENCLAW_STATE_DIR?.trim() || join(homedir(), ".claworks");
+  return (
+    process.env.CLAWORKS_STATE_DIR?.trim() ||
+    process.env.OPENCLAW_STATE_DIR?.trim() ||
+    join(homedir(), ".claworks")
+  );
 }
 
 export function discoverRobotMdExamplePath(cwd = process.cwd()): string | null {

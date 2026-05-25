@@ -1,17 +1,17 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 import { join } from "node:path";
 import { installPackFromNexus, type CwPackConfig, type LoadedPack } from "../pack-loader/index.js";
+import { defaultClaworksStateDir } from "./product-config-repair.js";
 import type { ClaworksRuntime } from "./runtime-types.js";
 
 const INSTALLED_STATE_FILE = "packs-installed.json";
 
 export function resolvePacksInstallRoot(): string {
-  return join(homedir(), ".claworks", "packs");
+  return join(defaultClaworksStateDir(), "packs");
 }
 
 export function resolveInstalledStatePath(): string {
-  return join(homedir(), ".claworks", INSTALLED_STATE_FILE);
+  return join(defaultClaworksStateDir(), INSTALLED_STATE_FILE);
 }
 
 export async function loadPersistedInstalled(): Promise<string[]> {

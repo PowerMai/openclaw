@@ -15,7 +15,7 @@
  *   node --import tsx scripts/claworks-evolution-chain-smoke.mjs
  *   CLAWORKS_PACKS_DIR=/path/to/claworks-packs node --import tsx scripts/claworks-evolution-chain-smoke.mjs
  */
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -82,6 +82,9 @@ async function main() {
   } = await import("../packages/claworks-runtime/src/index.ts");
 
   const stateDir = mkdtempSync(path.join(tmpdir(), "claworks-evolution-"));
+  mkdirSync(path.join(stateDir, "packs"), { recursive: true });
+  process.env.CLAWORKS_STATE_DIR = stateDir;
+  process.env.OPENCLAW_STATE_DIR = stateDir;
   const dbPath = path.join(stateDir, "robot.db");
   log(`state=${stateDir}`);
   log(`packs=${packsDir}`);
@@ -112,6 +115,19 @@ async function main() {
     playbookIds.has("evolution_sandbox_promotion_hitl"),
     "missing evolution_sandbox_promotion_hitl",
   );
+
+  const sandboxHitl = runtime.playbookEngine
+    .list()
+    .find((p) => p.id === "evolution_sandbox_promotion_hitl");
+  assert(
+    sandboxHitl?.trigger?.kind === "event",
+    "evolution_sandbox_promotion_hitl must be event trigger",
+  );
+  assert(
+    sandboxHitl?.trigger?.pattern === "evolution.sandbox_ready_for_promotion",
+    "evolution_sandbox_promotion_hitl wrong trigger pattern",
+  );
+  log(`evolution_sandbox_promotion_hitl trigger=${sandboxHitl.trigger.pattern}`);
 
   const weeklyExport = runtime.playbookEngine
     .list()
@@ -249,6 +265,12 @@ async function main() {
     `expected deployed status, got ${promoteOkBody.status}`,
   );
   log(`POST /v1/evolve/promote-draft approved=true OK status=${promoteOkBody.status}`);
+  const deployedPath = promoteOkBody.deploy?.playbook_path ?? "";
+  assert(
+    deployedPath.includes(stateDir),
+    `promote must deploy under stateDir, got ${deployedPath}`,
+  );
+  log(`promote deploy path isolated under stateDir OK`);
 
   const failProposalId = `evolved_smoke_fail_${Date.now()}`;
   const failPlaybookYaml = [
@@ -352,6 +374,13 @@ async function main() {
   log("pending promotions survive runtime stop/start OK");
 
   await stopClaworksRuntime(runtime2);
+
+  try {
+    rmSync(stateDir, { recursive: true, force: true });
+    log(`cleaned temp stateDir`);
+  } catch {
+    log(`warn: could not remove temp stateDir ${stateDir}`);
+  }
 
   log(`db=${dbPath} (ops: inspect cw_evolution_pending_promotions for manual verification)`);
   log("ALL EVOLUTION CHAIN CHECKS PASSED");

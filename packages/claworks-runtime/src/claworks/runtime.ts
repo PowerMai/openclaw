@@ -65,6 +65,7 @@ import {
   mergePackConfig,
   reloadClaworksPackById,
   reloadClaworksPacksFromDisk,
+  resolvePacksInstallRoot,
 } from "./pack-runtime.js";
 import { schedulePolicySync } from "./policy-sync.js";
 import { isClaworksProductionMode } from "./product-env.js";
@@ -226,7 +227,7 @@ export async function createClaworksRuntime(
   const packLoader = createPackLoader();
   const packPaths = [
     ...(config.packs?.paths ?? []),
-    join(homedir(), ".claworks", "packs"),
+    resolvePacksInstallRoot(),
     join(process.cwd(), "packs"),
     join(process.cwd(), "../claworks-packs"),
   ];
