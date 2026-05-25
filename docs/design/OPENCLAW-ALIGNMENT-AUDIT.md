@@ -235,19 +235,19 @@ Runtime 热修复：`POST /v1/doctor?fix=true`（与 `claworks doctor --fix` / `
 
 ### 8.6 可发布清单（2026-05-25）
 
-| 项                          | 命令 / 证据                                                                              | 状态        |
-| --------------------------- | ---------------------------------------------------------------------------------------- | ----------- |
-| 产品烟测                    | `pnpm claworks:smoke`（CI：`claworks-smoke.yml`）                                        | ✅          |
-| Gateway E2E                 | `pnpm claworks:gateway:e2e`（本地/发布前；CI 未跑，~90s）                                | ✅          |
-| Robot 插件 + runtime-store  | `pnpm test extensions/claworks-robot`                                                    | ✅          |
-| Runtime 单元                | `pnpm claworks:runtime:test`（CI）                                                       | ✅          |
-| OT 模拟 dry-run             | `pnpm claworks:ot-dry-run`（CI + 本地）                                                  | ✅          |
-| npm pack 预检（不实际上传） | `pnpm claworks:publish:dry-run` + `pnpm claworks:runtime:publish:dry-run`                | ✅          |
-| OT 实机 runbook             | [`docs/claworks/ot-live.md`](../claworks/ot-live.md) + `pnpm claworks:ot-live-checklist` | ✅          |
+| 项                          | 命令 / 证据                                                                                                 | 状态        |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------- |
+| 产品烟测                    | `pnpm claworks:smoke`（CI：`claworks-smoke.yml`）                                                           | ✅          |
+| Gateway E2E                 | `pnpm claworks:gateway:e2e`（本地/发布前；CI 未跑，~90s）                                                   | ✅          |
+| Robot 插件 + runtime-store  | `pnpm test extensions/claworks-robot`                                                                       | ✅          |
+| Runtime 单元                | `pnpm claworks:runtime:test`（CI）                                                                          | ✅          |
+| OT 模拟 dry-run             | `pnpm claworks:ot-dry-run`（CI + 本地）                                                                     | ✅          |
+| npm pack 预检（不实际上传） | `pnpm claworks:publish:dry-run` + `pnpm claworks:runtime:publish:dry-run`                                   | ✅          |
+| OT 实机 runbook             | [`docs/claworks/ot-live.md`](../claworks/ot-live.md) + `pnpm claworks:ot-live-checklist`                    | ✅          |
 | 发布前预检                  | `pnpm claworks:release:preflight`（`scripts/claworks-release-preflight.mjs`；加速 `CLAWORKS_SKIP_SMOKE=1`） | ✅ 脚本就绪 |
-| OT 实机签收                 | mqtt/opcua/modbus 现场，`simulate: false`                                                | ☐ 人工      |
-| npm 公开发布                | maintainer `npm publish`（dry-run 已通过，上传需审批）                                   | ☐ 人工      |
-| Release tag                 | `git status` 干净 + 打 tag                                                               | ☐ 人工      |
+| OT 实机签收                 | mqtt/opcua/modbus 现场，`simulate: false`                                                                   | ☐ 人工      |
+| npm 公开发布                | maintainer `npm publish`（dry-run 已通过，上传需审批）                                                      | ☐ 人工      |
+| Release tag                 | `git status` 干净 + 打 tag                                                                                  | ☐ 人工      |
 
 安装与共存：[`docs/claworks/install.md`](../claworks/install.md)。OT 实机：[`docs/claworks/ot-live.md`](../claworks/ot-live.md)。签收模板：[`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)。
 

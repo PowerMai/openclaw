@@ -33,11 +33,11 @@ pnpm claworks:doctor
 
 `claworks doctor` 在 `CLAWORKS_PRODUCT=1` 时会检测：
 
-| 检查 ID | 说明 |
-| ------- | ---- |
-| `claworks/product/gateway-port` | `gateway.port` 不得为 OpenClaw 保留端口 **18789**（ClaWorks 默认 **18800**） |
+| 检查 ID                         | 说明                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| `claworks/product/gateway-port` | `gateway.port` 不得为 OpenClaw 保留端口 **18789**（ClaWorks 默认 **18800**）       |
 | `claworks/product/launch-agent` | 误用 `ai.openclaw.gateway` 指向 `~/.claworks` 或 ClaWorks LaunchAgent 仍监听 18789 |
-| `claworks/product/misentry` | 未通过 `claworks.mjs` 入口推断产品模式时的警告 |
+| `claworks/product/misentry`     | 未通过 `claworks.mjs` 入口推断产品模式时的警告                                     |
 
 修复：`pnpm claworks:doctor --fix` 或 `claworks gateway install --force`。macOS 亦可 `node scripts/claworks-isolate.mjs` 清理误装 LaunchAgent。
 
@@ -66,15 +66,15 @@ curl -s http://127.0.0.1:18800/v1/health
 
 **验收（发布前）：**
 
-| 步骤 | 命令 | 说明 |
-| ---- | ---- | ---- |
-| 一键预检 | `pnpm claworks:release:preflight` | version → smoke → gateway:e2e → ot → publish dry-run |
-| 加速预检 | `CLAWORKS_SKIP_SMOKE=1 pnpm claworks:release:preflight` | 跳过 smoke；**打 tag 前仍须全量 smoke** |
-| 产品烟测 | `pnpm claworks:smoke` | CI：`claworks-smoke.yml` |
-| Gateway E2E | `pnpm claworks:gateway:e2e` | 本地必跑（~90s）；CI 未含 |
-| OT 模拟 | `pnpm claworks:ot-dry-run` | 无需实机（CI 已跑） |
-| OT 实机清单 | `pnpm claworks:ot-live-checklist` | 只读；实机见 [`ot-live.md`](ot-live.md) |
-| npm pack 预检 | `pnpm claworks:publish:dry-run` + `pnpm claworks:runtime:publish:dry-run` | 不实际上传 |
+| 步骤          | 命令                                                                      | 说明                                                 |
+| ------------- | ------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 一键预检      | `pnpm claworks:release:preflight`                                         | version → smoke → gateway:e2e → ot → publish dry-run |
+| 加速预检      | `CLAWORKS_SKIP_SMOKE=1 pnpm claworks:release:preflight`                   | 跳过 smoke；**打 tag 前仍须全量 smoke**              |
+| 产品烟测      | `pnpm claworks:smoke`                                                     | CI：`claworks-smoke.yml`                             |
+| Gateway E2E   | `pnpm claworks:gateway:e2e`                                               | 本地必跑（~90s）；CI 未含                            |
+| OT 模拟       | `pnpm claworks:ot-dry-run`                                                | 无需实机（CI 已跑）                                  |
+| OT 实机清单   | `pnpm claworks:ot-live-checklist`                                         | 只读；实机见 [`ot-live.md`](ot-live.md)              |
+| npm pack 预检 | `pnpm claworks:publish:dry-run` + `pnpm claworks:runtime:publish:dry-run` | 不实际上传                                           |
 
 ```bash
 pnpm claworks:release:preflight
