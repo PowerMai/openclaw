@@ -203,7 +203,7 @@ async function restartGatewayWithoutServiceManager(
   }
   if (pids.length > 1) {
     throw new Error(
-      `multiple gateway processes are listening on port ${port}: ${formatGatewayPidList(pids)}; use "openclaw gateway status --deep" before retrying restart`,
+      `multiple gateway processes are listening on port ${port}: ${formatGatewayPidList(pids)}; use \`${formatCliCommand("openclaw gateway status --deep")}\` before retrying restart`,
     );
   }
   writeGatewayRestartIntentSync({

@@ -46,7 +46,7 @@ const CHECK_ID = "claworks/product/gateway-port";
 const claworksGatewayPortCheck: HealthCheck = {
   id: CHECK_ID,
   kind: "core",
-  description: "ClaWorks gateway.port does not collide with OpenClaw (18789).",
+  description: `ClaWorks gateway.port does not collide with OpenClaw (${OPENCLAW_RESERVED_GATEWAY_PORT}).`,
   source: "doctor",
   async detect(ctx) {
     if (!isClaworksProduct(process.env)) {

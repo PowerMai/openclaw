@@ -4,8 +4,10 @@ import { runNodeHost } from "../../node-host/runner.js";
 import { normalizeOptionalString } from "../../shared/string-coerce.js";
 import { formatDocsLink } from "../../terminal/links.js";
 import { theme } from "../../terminal/theme.js";
+import { formatCliCommand } from "../command-format.js";
 import { parsePort } from "../daemon-cli/shared.js";
 import { formatHelpExamples } from "../help-format.js";
+import { resolveProductDefaultGatewayPort } from "../product-surface.js";
 import {
   runNodeDaemonInstall,
   runNodeDaemonRestart,
@@ -29,7 +31,9 @@ export function registerNodeCli(program: Command) {
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
           [
-            "openclaw node run --host 127.0.0.1 --port 18789",
+            formatCliCommand(
+              `openclaw node run --host 127.0.0.1 --port ${resolveProductDefaultGatewayPort()}`,
+            ),
             "Run the node host in the foreground.",
           ],
           ["openclaw node status", "Check node host service status."],
@@ -54,7 +58,10 @@ export function registerNodeCli(program: Command) {
         normalizeOptionalString(opts.host as string | undefined) ||
         existing?.gateway?.host ||
         "127.0.0.1";
-      const port = parsePortWithFallback(opts.port, existing?.gateway?.port ?? 18789);
+      const port = parsePortWithFallback(
+        opts.port,
+        existing?.gateway?.port ?? resolveProductDefaultGatewayPort(),
+      );
       await runNodeHost({
         gatewayHost: host,
         gatewayPort: port,

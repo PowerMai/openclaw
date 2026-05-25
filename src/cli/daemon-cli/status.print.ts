@@ -20,7 +20,12 @@ import { defaultRuntime } from "../../runtime.js";
 import { colorize } from "../../terminal/theme.js";
 import { shortenHomePath } from "../../utils.js";
 import { formatCliCommand } from "../command-format.js";
-import { productizeUserCopy, resolveProductDocUrl } from "../product-surface.js";
+import {
+  productizeUserCopy,
+  resolveProductCliName,
+  resolveProductDisplayName,
+  resolveProductDocUrl,
+} from "../product-surface.js";
 import {
   createCliStatusTextStyles,
   filterDaemonEnv,
@@ -239,7 +244,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
       defaultRuntime.error(
         warnText(
           productizeUserCopy(
-            "Check `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`; if this mismatch is unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same OpenClaw install.",
+            `Check \`${formatCliCommand("openclaw --version")}\`, \`which ${resolveProductCliName()}\`, and \`${formatCliCommand("openclaw gateway status --deep")}\`; if this mismatch is unexpected, update PATH so \`${resolveProductCliName()}\` points to the version you want, or reinstall the Gateway service from that same ${resolveProductDisplayName()} install.`,
           ),
         ),
       );

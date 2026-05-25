@@ -27,6 +27,13 @@ const EXEMPT_PATH_PARTS = [
   "tui/",
   "node_modules/",
   "dist/",
+  // OpenClaw source literals consumed by applyProductSurfaceCopy(); not shown verbatim in ClaWorks mode.
+  "src/cli/product-surface.ts",
+  // Doctor e2e harness uses fixed OpenClaw gateway port in launchd/systemd fixtures (not CLI copy).
+  "doctor.e2e-harness.ts",
+  // Test fixtures for gateway-status and status scan probes (not user-visible output).
+  "gateway-status/test-support.ts",
+  "status.scan.test-helpers.ts",
 ];
 
 const PATTERNS = [
@@ -102,7 +109,13 @@ async function scanFile(filePath) {
   const hits = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.includes("formatCliCommand(") || line.includes("productizeUserCopy(")) continue;
+    if (
+      line.includes("formatCliCommand(") ||
+      line.includes("formatInlineCliCommand(") ||
+      line.includes("productizeUserCopy(")
+    ) {
+      continue;
+    }
     for (const pattern of PATTERNS) {
       if (pattern.re.test(line)) {
         hits.push({ file: rel, line: i + 1, pattern: pattern.id, text: line.trim() });

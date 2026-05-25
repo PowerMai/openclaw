@@ -156,7 +156,9 @@ export function registerDnsCli(program: Command) {
       defaultRuntime.log("");
       defaultRuntime.log(
         theme.heading(
-          "Recommended config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json):",
+          productizeUserCopy(
+            "Recommended config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json):",
+          ),
         ),
       );
       defaultRuntime.writeJson({
@@ -250,7 +252,6 @@ export function registerDnsCli(program: Command) {
       });
 
       if (cfg.discovery?.wideArea?.enabled !== true) {
-        defaultRuntime.log("");
         defaultRuntime.log(
           theme.muted(
             productizeUserCopy(

@@ -14,6 +14,7 @@ import { defaultRuntime } from "../../runtime.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
 import { formatDocsLink } from "../../terminal/links.js";
 import { colorize, isRich, theme } from "../../terminal/theme.js";
+import { formatCliCommand } from "../command-format.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { addGatewayServiceCommands } from "../daemon-cli/register-service-commands.js";
 import { formatHelpExamples } from "../help-format.js";
@@ -445,11 +446,20 @@ export function registerGatewayCli(program: Command) {
         "after",
         () =>
           `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-            ["openclaw gateway run", "Run the gateway in the foreground."],
-            ["openclaw gateway status", "Show service status plus connectivity/capability."],
-            ["openclaw gateway discover", "Find local and wide-area gateway beacons."],
-            ["openclaw gateway stability", "Show recent stability diagnostics."],
-            ["openclaw gateway call health", "Call a gateway RPC method directly."],
+            [formatCliCommand("openclaw gateway run"), "Run the gateway in the foreground."],
+            [
+              formatCliCommand("openclaw gateway status"),
+              "Show service status plus connectivity/capability.",
+            ],
+            [
+              formatCliCommand("openclaw gateway discover"),
+              "Find local and wide-area gateway beacons.",
+            ],
+            [formatCliCommand("openclaw gateway stability"), "Show recent stability diagnostics."],
+            [
+              formatCliCommand("openclaw gateway call health"),
+              "Call a gateway RPC method directly.",
+            ],
           ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.openclaw.ai/cli/gateway")}\n`,
       ),
   );

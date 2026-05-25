@@ -7,6 +7,7 @@ import {
 import { classifySystemdUnavailableDetail } from "../../daemon/systemd-unavailable.js";
 import { isWSL } from "../../infra/wsl.js";
 import { defaultRuntime } from "../../runtime.js";
+import { formatCliCommand } from "../command-format.js";
 
 export type DaemonAction = "install" | "uninstall" | "start" | "stop" | "restart";
 
@@ -46,7 +47,10 @@ function emitDaemonActionJson(payload: DaemonActionResponse) {
 }
 
 function classifyDaemonHintText(text: string): DaemonHintKind {
-  if (text.includes("openclaw gateway install") || text.startsWith("Service not installed. Run:")) {
+  if (
+    text.includes(formatCliCommand("openclaw gateway install")) ||
+    text.startsWith("Service not installed. Run:")
+  ) {
     return "install";
   }
   if (text.startsWith("Restart the container or the service that manages it for ")) {

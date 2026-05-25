@@ -86,7 +86,6 @@ export function registerSecretsCli(program: Command) {
           formatGatewayCommandFailure({
             action: "reload secrets",
             error: err,
-            inspectCommand: "openclaw gateway status --deep",
           }),
         ),
       );

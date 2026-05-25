@@ -5,6 +5,7 @@ import { getTerminalTableWidth, renderTable } from "../terminal/table.js";
 import { theme } from "../terminal/theme.js";
 import { shortenHomePath } from "../utils.js";
 import { formatCliCommand } from "./command-format.js";
+import { productizeUserCopy } from "./product-surface.js";
 
 export type SkillsListOptions = {
   json?: boolean;
@@ -367,7 +368,7 @@ export function formatSkillInfo(
       `  Save via CLI: ${formatCliCommand(`openclaw config set skills.entries.${safeSkillKey}.apiKey YOUR_KEY`)}`,
     );
     lines.push(
-      `  Stored in: ${theme.muted("$OPENCLAW_CONFIG_PATH")} ${theme.muted("(default: ~/.openclaw/openclaw.json)")}`,
+      `  Stored in: ${theme.muted("$OPENCLAW_CONFIG_PATH")} ${theme.muted(productizeUserCopy("(default: ~/.openclaw/openclaw.json)"))}`,
     );
   }
 

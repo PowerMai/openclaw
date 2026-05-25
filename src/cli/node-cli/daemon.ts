@@ -35,6 +35,7 @@ import {
   resolveRuntimeStatusColor,
 } from "../daemon-cli/shared.js";
 import { formatInvalidConfigPort, formatInvalidPortOption } from "../error-format.js";
+import { resolveProductDefaultGatewayPort } from "../product-surface.js";
 
 type NodeDaemonInstallOptions = {
   host?: string;
@@ -83,7 +84,7 @@ function resolveNodeDefaults(
   if (opts.port !== undefined && portOverride === null) {
     return { host, port: null };
   }
-  const port = portOverride ?? config?.gateway?.port ?? 18789;
+  const port = portOverride ?? config?.gateway?.port ?? resolveProductDefaultGatewayPort();
   return { host, port };
 }
 
@@ -140,7 +141,7 @@ export async function runNodeDaemonInstall(opts: NodeDaemonInstallOptions) {
     await buildNodeInstallPlan({
       env: process.env,
       host,
-      port: port ?? 18789,
+      port: port ?? resolveProductDefaultGatewayPort(),
       tls,
       tlsFingerprint: tlsFingerprint || undefined,
       nodeId: opts.nodeId,

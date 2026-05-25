@@ -1,4 +1,5 @@
 import { isClaworksCliProduct } from "./cli-name.js";
+import { productizeUserCopy } from "./product-surface.js";
 
 const DEFAULT_TAGLINE = "All your chats, one OpenClaw.";
 const CLAWORKS_DEFAULT_TAGLINE = "Enterprise robots, one gateway.";
@@ -106,7 +107,7 @@ const TAGLINES: string[] = [
   "Alexa, but with taste.",
   "I'm not AI-powered, I'm AI-possessed. Big difference.",
   "Deployed locally, trusted globally, debugged eternally.",
-  "You had me at 'openclaw gateway start.'",
+  productizeUserCopy("You had me at 'openclaw gateway start.'"),
   HOLIDAY_TAGLINES.newYear,
   HOLIDAY_TAGLINES.lunarNewYear,
   HOLIDAY_TAGLINES.christmas,

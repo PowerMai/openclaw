@@ -1,6 +1,7 @@
 import { formatCliCommand } from "./command-format.js";
+import { resolveProductDefaultGatewayPort } from "./product-surface.js";
 
-const DEFAULT_GATEWAY_PORT_EXAMPLE = 18789;
+const DEFAULT_GATEWAY_PORT_EXAMPLE = resolveProductDefaultGatewayPort();
 
 function formatInlineCliCommand(command: string): string {
   return `\`${formatCliCommand(command)}\``;
@@ -57,7 +58,7 @@ export function formatStrictJsonParseFailure(params: { value: string; cause: unk
     `Could not parse ${JSON.stringify(preview)} as JSON for --strict-json.`,
     `${cause}.`,
     `Use valid JSON, for example ${formatInlineCliCommand(
-      "openclaw config set gateway.port 18789 --strict-json",
+      `openclaw config set gateway.port ${resolveProductDefaultGatewayPort()} --strict-json`,
     )}.`,
     "For plain strings, omit --strict-json.",
   ].join(" ");
@@ -75,11 +76,11 @@ export function formatGatewayCommandFailure(params: {
     .replace(/\s+/g, " ")
     .trim()
     .replace(/[.。]+$/u, "");
-  const inspectCommand = params.inspectCommand ?? "openclaw gateway status --deep";
   const detail = message ? `: ${message}` : "";
-  return `Could not ${params.action} because the Gateway did not respond${detail}. Run ${formatInlineCliCommand(
-    inspectCommand,
-  )} to inspect the active Gateway.`;
+  const inspectHint = params.inspectCommand
+    ? formatInlineCliCommand(params.inspectCommand)
+    : formatInlineCliCommand("openclaw gateway status --deep");
+  return `Could not ${params.action} because the Gateway did not respond${detail}. Run ${inspectHint} to inspect the active Gateway.`;
 }
 
 export function formatLookupMiss(params: {
