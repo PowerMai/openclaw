@@ -179,11 +179,18 @@ OpenClaw 侧可通过 MCP 工具调用 `cw_kb_search`、`cw_kb_ingest_folder`、
 ```bash
 pnpm claworks:kb-smoke
 pnpm claworks:personal:verify
+pnpm claworks:kb-audit-openclaw -- --write-report
 
 # 分类检索抽查
 curl -s "http://127.0.0.1:18800/v1/kb/search?q=产品&namespace=products&limit=3" | jq .
 curl -s "http://127.0.0.1:18800/v1/kb/status" | jq .
 ```
+
+**SMB 卷名**：macOS 挂载 iMac 时卷名可能是 `Macintosh HD` 或 `Macintosh HD-1`，以 `ls /Volumes` 为准；`personal.env` 中 `CLAWORKS_OPENCLAW_KB_ROOT` 必须指向实际挂载路径。
+
+**KB 审计**：`pnpm claworks:kb-audit-openclaw -- --write-report` 会在 `metadata/claworks_audit.json` 写入分类统计、OCR 占位比例、索引对齐与本体缺口（不修改 content/）。
+
+**向量检索前提**：`memory-lancedb` 当前仅支持 `text-embedding-3-small` / `text-embedding-3-large`。若自托管 Qwen 仅暴露 `Qwen3-Embedding-8B`，需在 `claworks.json` 的 `memory-lancedb.config.embedding` 使用兼容 OpenAI 嵌入 API 的模型名，或扩展插件支持自定义 `dimensions`。
 
 ---
 

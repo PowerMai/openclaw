@@ -1790,6 +1790,7 @@
     "claworks:personal:verify": "node scripts/claworks-personal-verify.mjs",
     "claworks:kb-smoke": "node scripts/claworks-kb-smoke.mjs",
     "claworks:kb-import-openclaw": "node scripts/claworks-kb-import-openclaw-workspace.mjs",
+    "claworks:kb-audit-openclaw": "node scripts/claworks-kb-audit-openclaw.mjs",
     "claworks:kb-ingest-folder": "node scripts/claworks-kb-ingest-folder.mjs",
     "claworks:prune-extensions": "node scripts/claworks-prune-extensions.mjs --dry-run",
     "claworks:prune-extensions:apply": "node scripts/claworks-prune-extensions.mjs --apply",
