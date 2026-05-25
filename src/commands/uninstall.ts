@@ -1,6 +1,7 @@
 import path from "node:path";
 import { cancel, confirm, isCancel, multiselect } from "@clack/prompts";
 import { formatCliCommand } from "../cli/command-format.js";
+import { resolveProductStateDirHint } from "../cli/product-surface.js";
 import { isNixMode } from "../config/config.js";
 import { resolveGatewayService } from "../daemon/service.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -133,7 +134,7 @@ export async function uninstallCommand(runtime: RuntimeEnv, opts: UninstallOptio
           label: "Gateway service",
           hint: "launchd / systemd / schtasks",
         },
-        { value: "state", label: "State + config", hint: "~/.openclaw" },
+        { value: "state", label: "State + config", hint: resolveProductStateDirHint() },
         { value: "workspace", label: "Workspace", hint: "agent files" },
         {
           value: "app",

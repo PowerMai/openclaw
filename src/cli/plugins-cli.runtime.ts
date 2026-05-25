@@ -14,6 +14,7 @@ import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
 import { theme } from "../terminal/theme.js";
 import { shortenHomeInString } from "../utils.js";
+import { formatCliCommand } from "./command-format.js";
 import { formatMissingPluginMessage } from "./error-format.js";
 import type { PluginMarketplaceListOptions, PluginRegistryOptions } from "./plugins-cli.js";
 
@@ -159,7 +160,7 @@ function collectConfiguredRuntimePluginWarnings(params: {
     }
     const installSpec = formatConfiguredRuntimePluginInstallSpec(candidate);
     return [
-      `- Configured runtime "${runtimeId}" requires the ${candidate.label} plugin, but no enabled "${runtimeId}" plugin was found. Run "openclaw doctor --fix" to install ${installSpec}, or install it manually with "openclaw plugins install ${installSpec}".`,
+      `- Configured runtime "${runtimeId}" requires the ${candidate.label} plugin, but no enabled "${runtimeId}" plugin was found. Run "${formatCliCommand("openclaw doctor --fix")}" to install ${installSpec}, or install it manually with "${formatCliCommand(`openclaw plugins install ${installSpec}`)}".`,
     ];
   });
 }
@@ -334,7 +335,7 @@ export async function runPluginsDoctorCommand(): Promise<void> {
   const stalePluginConfigHits = scanStalePluginConfig(sourceCfg ?? cfg, process.env);
   const stalePluginConfigWarnings = collectStalePluginConfigWarnings({
     hits: stalePluginConfigHits,
-    doctorFixCommand: "openclaw doctor --fix",
+    doctorFixCommand: formatCliCommand("openclaw doctor --fix"),
     autoRepairBlocked: isStalePluginAutoRepairBlocked(sourceCfg ?? cfg, process.env),
   });
   const configuredRuntimePluginWarnings = collectConfiguredRuntimePluginWarnings({

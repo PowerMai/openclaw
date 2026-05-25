@@ -1,3 +1,4 @@
+import { formatCliCommand } from "../../../cli/command-format.js";
 import { productizeUserCopy } from "../../../cli/product-surface.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import { resolveGatewayService } from "../../../daemon/service.js";
@@ -35,7 +36,7 @@ export async function installGatewayDaemonNonInteractive(params: {
   if (process.platform === "linux" && !systemdAvailable) {
     runtime.log(
       productizeUserCopy(
-        "Systemd user services are unavailable; skipping service install. Use a direct shell run (`openclaw gateway run`) or rerun without --install-daemon on this session.",
+        `Systemd user services are unavailable; skipping service install. Use a direct shell run (\`${formatCliCommand("openclaw gateway run")}\`) or rerun without --install-daemon on this session.`,
       ),
     );
     return { installed: false, skippedReason: "systemd-user-unavailable" };

@@ -12,12 +12,15 @@ vi.mock("./plugin-payload-validation.js", () => ({
   runPluginPayloadSmokeCheck: mocks.runPluginPayloadSmokeCheck,
 }));
 
+import { DOCTOR_FIX_HINT } from "../../commands/doctor/shared/doctor-fix-hint.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import {
   convergenceWarningsToOutcomes,
   filterRecordsToActive,
   runPostCorePluginConvergence,
 } from "./post-core-plugin-convergence.js";
+
+const REPAIR_GUIDANCE = `${DOCTOR_FIX_HINT} To retry plugin repair.`;
 
 describe("runPostCorePluginConvergence", () => {
   beforeEach(() => {
@@ -124,7 +127,7 @@ describe("runPostCorePluginConvergence", () => {
           'Failed to install missing configured plugin "discord" from @openclaw/discord: ENETUNREACH.',
         message:
           'Failed to install missing configured plugin "discord" from @openclaw/discord: ENETUNREACH.',
-        guidance: ["Run `openclaw doctor --fix` to retry plugin repair."],
+        guidance: [REPAIR_GUIDANCE],
       },
     ]);
   });
@@ -161,7 +164,7 @@ describe("runPostCorePluginConvergence", () => {
         message:
           'Plugin "brave" failed post-core payload smoke check (missing-main-entry): Plugin main entry "dist/index.js" not found at /p/brave/dist/index.js',
         guidance: [
-          "Run `openclaw doctor --fix` to retry plugin repair.",
+          REPAIR_GUIDANCE,
           "Run `openclaw plugins inspect brave --runtime --json` for details.",
         ],
       },
@@ -198,7 +201,7 @@ describe("runPostCorePluginConvergence", () => {
         message:
           'Plugin "brave" failed post-core payload smoke check (missing-install-path): Install path is missing from the plugin install record.',
         guidance: [
-          "Run `openclaw doctor --fix` to retry plugin repair.",
+          REPAIR_GUIDANCE,
           "Run `openclaw plugins inspect brave --runtime --json` for details.",
         ],
       },
